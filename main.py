@@ -91,34 +91,34 @@ if args.epochs > 0:
         train_dataset = DataLoader(Multilingual_Places_DataLoader_All(train_eng, train_jpn, train_hindi, image_path),batch_size=args.batch_size,shuffle=True,num_workers=args.workers,drop_last=True)
     
 if args.dataset in ['Places', 'PlacesEng']:
-    val_dataset = DataLoader(Places_DataLoader(val_data_path, image_path, language='English'),batch_size=args.batch_size,shuffle=True,num_workers=args.workers,drop_last=True)
+    val_dataset = DataLoader(Places_DataLoader(val_data_path, image_path, language='English'),batch_size=100,shuffle=False,num_workers=args.workers,drop_last=True)
 elif args.dataset == 'PlacesHindi':
-    val_dataset = DataLoader(Places_DataLoader(val_data_path, image_path, language='Hindi'),batch_size=args.batch_size,shuffle=True,num_workers=args.workers,drop_last=True)
+    val_dataset = DataLoader(Places_DataLoader(val_data_path, image_path, language='Hindi'),batch_size=100,shuffle=False,num_workers=args.workers,drop_last=True)
 elif args.dataset == 'PlacesJpn':
-    val_dataset = DataLoader(Places_DataLoader(val_data_path, image_path, language='Japanese'),batch_size=args.batch_size,shuffle=True,num_workers=args.workers,drop_last=True)
+    val_dataset = DataLoader(Places_DataLoader(val_data_path, image_path, language='Japanese'),batch_size=100,shuffle=False,num_workers=args.workers,drop_last=True)
 elif args.dataset == 'PlacesMulti' and args.mono_batches:
-    val_dataset_eng = DataLoader(Places_DataLoader(val_eng, image_path, language='English'),batch_size=args.batch_size,shuffle=True,num_workers=args.workers,drop_last=True)
-    val_dataset_hindi = DataLoader(Places_DataLoader(val_hindi, image_path, language='Hindi'),batch_size=args.batch_size,shuffle=True,num_workers=args.workers,drop_last=True)
-    val_dataset_jpn = DataLoader(Places_DataLoader(val_jpn, image_path, language='Japanese'),batch_size=args.batch_size,shuffle=True,num_workers=args.workers,drop_last=True)
+    val_dataset_eng = DataLoader(Places_DataLoader(val_eng, image_path, language='English'),batch_size=100,shuffle=False,num_workers=args.workers,drop_last=True)
+    val_dataset_hindi = DataLoader(Places_DataLoader(val_hindi, image_path, language='Hindi'),batch_size=100,shuffle=False,num_workers=args.workers,drop_last=True)
+    val_dataset_jpn = DataLoader(Places_DataLoader(val_jpn, image_path, language='Japanese'),batch_size=100,shuffle=False,num_workers=args.workers,drop_last=True)
 elif args.dataset == 'PlacesMulti' and args.loss_type != 'CrossLingual':
-    val_dataset = DataLoader(Multilingual_Places_DataLoader(val_eng, val_jpn, val_hindi, image_path),batch_size=args.batch_size,shuffle=True,num_workers=args.workers,drop_last=True)
+    val_dataset = DataLoader(Multilingual_Places_DataLoader(val_eng, val_jpn, val_hindi, image_path),batch_size=100,shuffle=False,num_workers=args.workers,drop_last=True)
 elif args.dataset == 'PlacesMulti':
-    val_dataset = DataLoader(Multilingual_Places_DataLoader_All(val_eng, val_jpn, val_hindi, image_path),batch_size=args.batch_size,shuffle=True,num_workers=args.workers,drop_last=True)
+    val_dataset = DataLoader(Multilingual_Places_DataLoader_All(val_eng, val_jpn, val_hindi, image_path),batch_size=100,shuffle=False,num_workers=args.workers,drop_last=True)
 
 if args.dataset in ['Places', 'PlacesEng']:
-    test_dataset = DataLoader(Places_DataLoader(test_data_path, image_path, language='English'),batch_size=args.batch_size,shuffle=True,num_workers=args.workers,drop_last=True)
+    test_dataset = DataLoader(Places_DataLoader(test_data_path, image_path, language='English'),batch_size=100,shuffle=False,num_workers=args.workers,drop_last=True)
 elif args.dataset == 'PlacesHindi':
-    test_dataset = DataLoader(Places_DataLoader(test_data_path, image_path, language='Hindi'),batch_size=args.batch_size,shuffle=True,num_workers=args.workers,drop_last=True)
+    test_dataset = DataLoader(Places_DataLoader(test_data_path, image_path, language='Hindi'),batch_size=100,shuffle=False,num_workers=args.workers,drop_last=True)
 elif args.dataset == 'PlacesJpn':
-    test_dataset = DataLoader(Places_DataLoader(test_data_path, image_path, language='Japanese'),batch_size=args.batch_size,shuffle=True,num_workers=args.workers,drop_last=True)
+    test_dataset = DataLoader(Places_DataLoader(test_data_path, image_path, language='Japanese'),batch_size=100,shuffle=False,num_workers=args.workers,drop_last=True)
 elif args.dataset == 'PlacesMulti' and args.mono_batches:
-    test_dataset_eng = DataLoader(Places_DataLoader(test_eng, image_path, language='English'),batch_size=args.batch_size,shuffle=True,num_workers=args.workers,drop_last=True)
-    test_dataset_hindi = DataLoader(Places_DataLoader(test_hindi, image_path, language='Hindi'),batch_size=args.batch_size,shuffle=True,num_workers=args.workers,drop_last=True)
-    test_dataset_jpn = DataLoader(Places_DataLoader(test_jpn, image_path, language='Japanese'),batch_size=args.batch_size,shuffle=True,num_workers=args.workers,drop_last=True)
+    test_dataset_eng = DataLoader(Places_DataLoader(test_eng, image_path, language='English'),batch_size=100,shuffle=False,num_workers=args.workers,drop_last=True)
+    test_dataset_hindi = DataLoader(Places_DataLoader(test_hindi, image_path, language='Hindi'),batch_size=100,shuffle=False,num_workers=args.workers,drop_last=True)
+    test_dataset_jpn = DataLoader(Places_DataLoader(test_jpn, image_path, language='Japanese'),batch_size=100,shuffle=False,num_workers=args.workers,drop_last=True)
 elif args.dataset == 'PlacesMulti' and args.loss_type != 'CrossLingual':
-    test_dataset = DataLoader(Multilingual_Places_DataLoader(test_eng, test_jpn, test_hindi, image_path),batch_size=args.batch_size,shuffle=True,num_workers=args.workers,drop_last=True)
+    test_dataset = DataLoader(Multilingual_Places_DataLoader(test_eng, test_jpn, test_hindi, image_path),batch_size=100,shuffle=False,num_workers=args.workers,drop_last=True)
 elif args.dataset == 'PlacesMulti':
-    test_dataset = DataLoader(Multilingual_Places_DataLoader_All(test_eng, test_jpn, test_hindi, image_path),batch_size=args.batch_size,shuffle=True,num_workers=args.workers,drop_last=True)
+    test_dataset = DataLoader(Multilingual_Places_DataLoader_All(test_eng, test_jpn, test_hindi, image_path),batch_size=100,shuffle=False,num_workers=args.workers,drop_last=True)
 
 # Instantiate loss function, optimizer, etc for training
 scaler = GradScaler()

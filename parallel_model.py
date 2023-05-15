@@ -15,8 +15,8 @@ class Parallel(th.nn.Module):
         
         self.heads = heads
         self.layers = layers
-        self.batch = batch // gpus
-        self.gpus = gpus
+        # self.batch = batch // gpus
+        # self.gpus = gpus
         self.feat_train = feat_trainable
         self.weighted_sum = weighted_sum
         self.use_langID = use_langID
@@ -62,18 +62,19 @@ class Parallel(th.nn.Module):
         if self.use_langID:
             self.lang_tokens = nn.Parameter(th.rand((3,self.feat_dim))) # 3 languages, one token each, access by indexing
 
-    def weight_by(self, x, y, langID=None):
+    def weight_by(self, x, y, batch_size, langID=None):
         x = th.nn.functional.softmax(x,dim=-1)
         if self.use_langID:
             x1 = x[0].repeat(list(y.shape[1:])+[1]).permute(3,0,1,2)
-            x2 = th.stack([x for _ in range(self.batch)])
-            by_batch = x2[th.arange(self.batch),langID].t().unsqueeze(2).unsqueeze(3)
+            x2 = th.stack([x for _ in range(batch_size)])
+            by_batch = x2[th.arange(batch_size),langID].t().unsqueeze(2).unsqueeze(3)
             rep = by_batch.expand(-1,-1,y.shape[2],y.shape[3])
             return rep*y
         else:
             return x.repeat(list(y.shape[1:])+[1]).permute(3,0,1,2)*y
 
     def forward(self, img, audio, return_attentions=False, langID=None, return_feats_with_attns=False):
+        batch_size = audio.shape[0]
         if self.feat_train:
             with th.no_grad():
                 feat_in = self.wav2vec(audio, sampling_rate=16000, return_tensors='pt')['input_values'].squeeze(0).cuda().type(self.hubert.dtype)
@@ -86,17 +87,17 @@ class Parallel(th.nn.Module):
                 feat_stacked = th.stack(feat_hs) 
         if self.weighted_sum:
             # we want a gradient for the weights!
-            feat_weighted = self.weight_by(self.feat_layer_weights, feat_stacked, langID)
+            feat_weighted = self.weight_by(self.feat_layer_weights, feat_stacked, batch_size, langID)
             feat_out = th.sum(feat_weighted, dim=0)
             feat_out = feat_out.permute(1,0,2)
         else:
             feat_out = feat_stacked[-1].permute(1,0,2)
        
-        target = th.stack([self.target_CLS for _ in range(self.batch)]).unsqueeze(0)
+        target = th.stack([self.target_CLS for _ in range(batch_size)]).unsqueeze(0)
         if self.use_langID:
             assert(langID != None)
-            toks = th.stack([self.lang_tokens for _ in range(self.batch)])
-            lang_toks = toks[th.arange(self.batch),langID].unsqueeze(0)
+            toks = th.stack([self.lang_tokens for _ in range(batch_size)])
+            lang_toks = toks[th.arange(batch_size),langID].unsqueeze(0)
             feat_out = th.cat((lang_toks, feat_out),dim=0)
         if return_attentions or return_feats_with_attns:
             enc_in = th.cat((target, feat_out),dim=0)
