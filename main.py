@@ -3,34 +3,35 @@ from args import get_args
 args = get_args()
 
 # Declaring all the paths up top
+import data_paths
 # If not pre-dumping image embeddings, comment out the line below and remove image_path from model arguments
-image_path = "/saltpool0/data/layneberry/PlacesAudio_400k_distro/image_encodings_from_clip_large.pkl"
+image_path = data_paths.image_encodings
 if args.dataset == 'Places':
-    train_data_path = "/saltpool0/data/layneberry/PlacesAudio_400k_distro/PlacesEnglishFull_train.json"
-    val_data_path = "/saltpool0/data/layneberry/PlacesAudio_400k_distro/PlacesEnglishFull_val.json"
-    test_data_path = "/saltpool0/data/layneberry/PlacesAudio_400k_distro/PlacesEnglishFull_test.json"
+    train_data_path = data_paths.eng_meta_root + "/PlacesEnglishFull_train.json"
+    val_data_path = data_paths.eng_meta_root + "/PlacesEnglishFull_val.json"
+    test_data_path = data_paths.eng_meta_root + "/PlacesEnglishFull_test.json"
 elif args.dataset == 'PlacesEng':
-    train_data_path = "/saltpool0/data/layneberry/PlacesAudio_400k_distro/PlacesEnglishSubset_train.json"
-    val_data_path = "/saltpool0/data/layneberry/PlacesAudio_400k_distro/PlacesEnglishSubset_val.json"
-    test_data_path = "/saltpool0/data/layneberry/PlacesAudio_400k_distro/PlacesEnglishSubset_test.json"
+    train_data_path = data_paths.eng_meta_root + "/PlacesEnglishSubset_train.json"
+    val_data_path = data_paths.eng_meta_root + "/PlacesEnglishSubset_val.json"
+    test_data_path = data_paths.eng_meta_root + "/PlacesEnglishSubset_test.json"
 elif args.dataset == 'PlacesHindi':
-    train_data_path = "/saltpool0/data/layneberry/hindi_places_100k/PlacesHindi_train.json"
-    val_data_path = "/saltpool0/data/layneberry/hindi_places_100k/PlacesHindi_val.json"
-    test_data_path = "/saltpool0/data/layneberry/hindi_places_100k/PlacesHindi_test.json"
+    train_data_path = data_paths.hindi_meta_root + "/PlacesHindi_train.json"
+    val_data_path = data_paths.hindi_meta_root + "/PlacesHindi_val.json"
+    test_data_path = data_paths.hindi_meta_root + "/PlacesHindi_test.json"
 elif args.dataset == 'PlacesJpn':
-    train_data_path = "/saltpool0/data/layneberry/PlacesAudioJpn_100k/PlacesJpn_train.json"
-    val_data_path = "/saltpool0/data/layneberry/PlacesAudioJpn_100k/PlacesJpn_val.json"
-    test_data_path = "/saltpool0/data/layneberry/PlacesAudioJpn_100k/PlacesJpn_test.json"
+    train_data_path = data_paths.jpn_meta_root + "/PlacesJpn_train.json"
+    val_data_path = data_paths.jpn_meta_root + "/PlacesJpn_val.json"
+    test_data_path = data_paths.jpn_meta_root + "/PlacesJpn_test.json"
 elif args.dataset == 'PlacesMulti':
-    train_eng = "/saltpool0/data/layneberry/PlacesAudio_400k_distro/PlacesEnglishSubset_train.json"
-    val_eng = "/saltpool0/data/layneberry/PlacesAudio_400k_distro/PlacesEnglishSubset_val.json"
-    test_eng = "/saltpool0/data/layneberry/PlacesAudio_400k_distro/PlacesEnglishSubset_test.json"
-    train_jpn = "/saltpool0/data/layneberry/PlacesAudioJpn_100k/PlacesJpn_train.json"
-    val_jpn = "/saltpool0/data/layneberry/PlacesAudioJpn_100k/PlacesJpn_val.json"
-    test_jpn = "/saltpool0/data/layneberry/PlacesAudioJpn_100k/PlacesJpn_test.json"
-    train_hindi = "/saltpool0/data/layneberry/hindi_places_100k/PlacesHindi_train.json"
-    val_hindi = "/saltpool0/data/layneberry/hindi_places_100k/PlacesHindi_val.json"
-    test_hindi = "/saltpool0/data/layneberry/hindi_places_100k/PlacesHindi_test.json"
+    train_eng = data_paths.eng_meta_root + "/PlacesEnglishSubset_train.json"
+    val_eng = data_paths.eng_meta_root + "/PlacesEnglishSubset_val.json"
+    test_eng = data_paths.eng_meta_root + "/PlacesEnglishSubset_test.json"
+    train_jpn = data_paths.jpn_meta_root + "/PlacesJpn_train.json"
+    val_jpn = data_paths.jpn_meta_root + "/PlacesJpn_val.json"
+    test_jpn = data_paths.jpn_meta_root + "/PlacesJpn_test.json"
+    train_hindi = data_paths.hindi_meta_root + "/PlacesHindi_train.json"
+    val_hindi = data_paths.hindi_meta_root + "/PlacesHindi_val.json"
+    test_hindi = data_paths.hindi_meta_root + "/PlacesHindi_test.json"
 
 # Import everything 
 from metrics import evaluate
@@ -67,9 +68,25 @@ else:
 
 if args.load_chkpt:
     if args.load_from != '':
-        model.load_state_dict(th.load(args.load_from), strict=False)
+        state_dict = th.load(args.load_from)
     else:
-        model.load_state_dict(th.load(args.chkpt_path), strict=False)
+        state_dict = th.load(args.chkpt_path)
+try:
+    model.load_state_dict(state_dict)
+except:
+    # Older state dicts need cleaning
+    to_pop = []
+    to_modify = []
+    for k,v in state_dict.items():
+        if '.clip' in k:
+            to_pop.append(k)
+        elif 'transform' in k and 'layers' not in k:
+            to_modify.append(k)
+    for k in to_pop:
+        state_dict.pop(k)
+    for k in to_modify:
+        state_dict[k.replace('transform', 'transform.layers.0')] = state_dict.pop(k)
+    model.load_state_dict(state_dict)
 
 model = model.to(args.device)
    

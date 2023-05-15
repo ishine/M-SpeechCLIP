@@ -8,6 +8,7 @@ import clip
 from transformers import Wav2Vec2Processor, HubertModel
 import torch as th
 import time, random
+import data_paths
 
 class Places_DataLoader(Dataset):
     """Monolingual Places dataset loader."""
@@ -25,7 +26,7 @@ class Places_DataLoader(Dataset):
         if language != 'English' and ('val' in data_path or 'test' in data_path):
             # Retrieving the English caption is useful for speech-text retrieval experiments
             # If not testing speech-text and don't have English captions, just comment this out and remove the 'english_text' field from __getitem__'s return dict
-            self.caption_lookup = json.load(open('/saltpool0/data/layneberry/PlacesAudio_400k_distro/english_caption_lookup_dict.json'))
+            self.caption_lookup = json.load(open(data_paths.text_captions))
 
     def __len__(self):
         return len(self.data)
@@ -33,13 +34,13 @@ class Places_DataLoader(Dataset):
     def __getitem__(self, idx):
         if self.language == 'English':
             langID = 0
-            cap_path = '/saltpool0/data/layneberry/PlacesAudio_400k_distro/' + self.data[idx]['wav']
+            cap_path = data_paths.eng_wavs_root + '/' + self.data[idx]['wav']
         elif self.language == 'Hindi':
             langID = 2
-            cap_path = '/saltpool0/data/layneberry/hindi_places_100k/hindi_wavs/' + self.data[idx]['hindi_wav']
+            cap_path = data_paths.hindi_wavs_root + '/' + self.data[idx]['hindi_wav']
         elif self.language == 'Japanese':
             langID = 1
-            cap_path = '/saltpool0/data/layneberry/PlacesAudioJpn_100k/' + self.data[idx]['wav']
+            cap_path = data_paths.jpn_wavs_root + '/' + self.data[idx]['wav']
         caption_audio, sr = sf.read(cap_path)
         assert(sr==16000) # sampling rate 16 kHz
         target_length = self.caption_length * 16000
@@ -52,7 +53,7 @@ class Places_DataLoader(Dataset):
             caption_audio = np.concatenate((caption_audio, [0.0 for _ in range(target_length - len(caption_audio))])) # Zero-pad
         
         # To switch to image encoding in the dataloader, uncomment the next 2 lines and comment the 4 after
-        # image = Image.open('/saltpool0/data/layneberry/PlacesAudio_400k_distro/images/' + self.data[idx]['image'])
+        # image = Image.open(data_paths.image_root + '/' + self.data[idx]['image'])
         # image = self.img_preprocess(image)
         if self.data[idx]['image'][0] == '/':
             image = self.img_encodings[self.data[idx]['image']]
@@ -99,16 +100,16 @@ class Multilingual_Places_DataLoader(Dataset):
 
         # To switch to image encoding in the dataloader, switch which definition of 'image' is commented out in each of the following three cases
         if langID == 0:
-            caption_audio, sr = sf.read('/saltpool0/data/layneberry/PlacesAudio_400k_distro/' + self.data_eng[idx]['wav'])
-            # image = Image.open('/saltpool0/data/layneberry/PlacesAudio_400k_distro/images/' + self.data_eng[idx]['image'])
+            caption_audio, sr = sf.read(data_paths.eng_wavs_root + '/' + self.data_eng[idx]['wav'])
+            # image = Image.open(data_paths.image_root + '/' + self.data_eng[idx]['image'])
             image = self.img_encodings['/'+self.data_eng[idx]['image']]
         elif langID == 1:
-            caption_audio, sr = sf.read('/saltpool0/data/layneberry/PlacesAudioJpn_100k/' + self.data_jpn[idx-len(self.data_eng)]['wav'])
-            # image = Image.open('/saltpool0/data/layneberry/PlacesAudio_400k_distro/images/' + self.data_jpn[idx-len(self.data_eng)]['image'])
+            caption_audio, sr = sf.read(data_paths.jpn_wavs_root + '/' + self.data_jpn[idx-len(self.data_eng)]['wav'])
+            # image = Image.open(data_paths.image_root + '/' + self.data_jpn[idx-len(self.data_eng)]['image'])
             image = self.img_encodings[self.data_jpn[idx-len(self.data_eng)]['image']]
         elif langID == 2:
-            caption_audio, sr = sf.read('/saltpool0/data/layneberry/hindi_places_100k/hindi_wavs/' + self.data_hindi[idx-len(self.data_eng)-len(self.data_jpn)]['hindi_wav'])
-            # image = Image.open('/saltpool0/data/layneberry/PlacesAudio_400k_distro/images/' + self.data_hindi[idx-len(self.data_eng)-len(self.data_jpn)]['image'])
+            caption_audio, sr = sf.read(data_paths.hindi_wavs_root + '/' + self.data_hindi[idx-len(self.data_eng)-len(self.data_jpn)]['hindi_wav'])
+            # image = Image.open(data_paths.image_root + '/' + self.data_hindi[idx-len(self.data_eng)-len(self.data_jpn)]['image'])
             image = self.img_encodings['/'+self.data_hindi[idx-len(self.data_eng)-len(self.data_jpn)]['image']]
 
         assert(sr==16000) # sampling rate 16 kHz
@@ -159,16 +160,16 @@ class Multilingual_Places_DataLoader_All(Dataset):
 
     def __getitem__(self, idx):
         # To switch to image encoding in the dataloader, uncomment the next 2 lines and comment the one after
-        # image = Image.open('/saltpool0/data/layneberry/PlacesAudio_400k_distro/images/' + self.data_eng[idx]['image'])
+        # image = Image.open(data_paths.image_root + '/' + self.data_eng[idx]['image'])
         # image = self.img_preprocess(image)
         image = self.img_encodings['/'+self.data_eng[idx]['image']]
 
-        eng_audio, _ = sf.read('/saltpool0/data/layneberry/PlacesAudio_400k_distro/'+self.data_eng[idx]['wav'])
+        eng_audio, _ = sf.read(data_paths.eng_wavs_root + '/' + self.data_eng[idx]['wav'])
 
-        hindi_audio, _ = sf.read('/saltpool0/data/layneberry/hindi_places_100k/hindi_wavs/' + self.data_hindi[idx]['hindi_wav'])
+        hindi_audio, _ = sf.read(data_paths.hindi_wavs_root + '/' + self.data_hindi[idx]['hindi_wav'])
         assert('/'+self.data_hindi[idx]['image'] == '/' + self.data_eng[idx]['image'])
         
-        jpn_audio, _ = sf.read('/saltpool0/data/layneberry/PlacesAudioJpn_100k/' + self.data_jpn[idx]['wav'])
+        jpn_audio, _ = sf.read(data_paths.jpn_wavs_root + '/' + self.data_jpn[idx]['wav'])
         assert(self.data_jpn[idx]['image'] == '/'+self.data_eng[idx]['image'])
         
         target_length = self.caption_length * 16000

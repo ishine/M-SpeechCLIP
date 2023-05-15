@@ -5,20 +5,21 @@ from places_dataloader import Places_DataLoader, Multilingual_Places_DataLoader,
 import clip
 from parallel_model import Parallel
 from tqdm import tqdm
+import data_paths
 
 clip_model, img_preprocess = clip.load('ViT-L/14',device='cuda')
 clip_model.eval()
 
 # Comment out next line if not using pre-computed image features
-image_path = "/saltpool0/data/layneberry/PlacesAudio_400k_distro/image_encodings_from_clip_large.pkl"
+image_path = data_paths.image_encodings
 
-english_path = '/saltpool0/data/layneberry/PlacesAudio_400k_distro/PlacesEnglishSubset_test.json'
-japanese_path = '/saltpool0/data/layneberry/PlacesAudioJpn_100k/PlacesJpn_test.json'
-hindi_path = '/saltpool0/data/layneberry/hindi_places_100k/PlacesHindi_test.json'
+english_path = data_paths.eng_meta_root + '/PlacesEnglishSubset_test.json'
+japanese_path = data_paths.jpn_meta_root + '/PlacesJpn_test.json'
+hindi_path = data_paths.hindi_meta_root + '/PlacesHindi_test.json'
 val_all = DataLoader(Multilingual_Places_DataLoader_All(english_path, japanese_path, hindi_path, image_path),batch_size=100,shuffle=False,num_workers=16,drop_last=True)
 
 model = th.nn.DataParallel(Parallel(heads=8, layers=1, batch=100, gpus=1, feat_trainable=True, weighted_sum=True, hubert_size='large', clip_size='large', use_langID=False)).cuda()
-state_dict = th.load('/saltpool0/scratch/layneberry/CLIPC/trainableHuBERT_fromNoLangIDMultiBatches.pth')
+state_dict = th.load(data_paths.checkpoint_root + '/trainableHuBERT_fromNoLangIDMultiBatches.pth')
 try:
     model.load_state_dict(state_dict)
 except:

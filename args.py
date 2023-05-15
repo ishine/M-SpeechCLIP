@@ -18,7 +18,7 @@ def get_args(description='M-SpeechCLIP Hyperparameters and Training Arguments'):
 
     # Data and model paths
     parser.add_argument('--dataset', type=str, default='PlacesEng', help='Which dataset to train and test on (current options are Places (full 400k English), PlacesEng (100k subset English), PlacesHindi, PlacesJpn, and PlacesMulti)')
-    parser.add_argument('--chkpt_path', type=str, default='/saltpool0/scratch/layneberry/CLIPC/default_checkpoint.pth', help='Where to save checkpoints (also used as the path to load from if load_chkpt is on')
+    parser.add_argument('--chkpt_path', type=str, default='./default_checkpoint.pth', help='Where to save checkpoints (also used as the path to load from if load_chkpt is on')
     parser.add_argument('--load_chkpt', type=bool, default=False, help='Whether to load weights from a saved checkpoint (if on, location defaults to chkpt_path)')
     parser.add_argument('--load_from', type=str, default='', help='If specified, loads from a different location than ckpt_path')
 
