@@ -31,3 +31,6 @@ Remember to set `CUDA_VISIBLE_DEVICES=` to the set of GPUs you'll be training on
 The easiest way to test a model is to take the command you used to train it, and modify the `epochs` argument to 0. This will output Recall@1, 2, 5, and 10 on both the validation and testing set that correspond to the data you trained on. If you trained using multilingual batches, and want to evaluate performance on monolingual batches, you can pass the argument `monolingual_batches=1`, and you'll get retrieval scores for each language separately.
 
 For testing transfer to the tasks of speech-text and cross-lingual speech-speech retrieval, you can modify the script `test_zero_shot_transfer.py` to instantiate the model you want to test, and then run it to output all possible retrieval directions between English Text, English Speech, Hindi Speech, Japanese Speech, and Images.
+
+## Pre-Trained Checkpoints
+Fully trained monolingual and multi-lingual M-SpeechCLIP models can be found [here](https://drive.google.com/file/d/1f2jB4eFhKIz8d7i0SLE1-U3ZzF_Byp87/view?usp=sharing).
